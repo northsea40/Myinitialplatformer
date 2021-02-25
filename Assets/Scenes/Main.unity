@@ -241,8 +241,13 @@ MonoBehaviour:
   Walljumpdirection: {x: 10, y: 10}
   Jumptimerset: 0.15
   Walljumptimerset: 0.3
-  Walljumptimer: 0
+  Walljumptimer: 0.21
   Walljumpleavetimerset: 0.5
+  Ledgechecker: {fileID: 0}
+  Ledgexoffset1: 0
+  Ledgexoffset2: 0
+  Ledgeyoffset1: 0
+  Ledgeyoffset2: 0
 --- !u!50 &43878496
 Rigidbody2D:
   serializedVersion: 4
@@ -277,7 +282,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.04596734, y: -0.1685462}
+  m_Offset: {x: -0.0081727505, y: -0.16854668}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -288,7 +293,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.8661418, y: 1.6629076}
+  m_Size: {x: 0.7149625, y: 1.5873508}
   m_EdgeRadius: 0
 --- !u!95 &43878498
 Animator:

@@ -47,6 +47,17 @@ public class Movement : MonoBehaviour
     private float LowJumpMultiplier = 2;
     private float Vx;
     private float Vy;
+    private bool Istouchingtheledge;
+    public Transform Ledgechecker;
+    private bool Canledgeclimb;
+    private bool Ledgedetected;
+    private Vector2 Ledgeposbot;
+    private Vector2 Ledgepos1;
+    private Vector2 Ledgepos2;
+    public float Ledgexoffset1;
+    public float Ledgexoffset2;
+    public float Ledgeyoffset1;
+    public float Ledgeyoffset2;
     void Start()
     {
         Myrb = this.GetComponent<Rigidbody2D>();
@@ -92,7 +103,7 @@ public class Movement : MonoBehaviour
         Myanimator.SetBool("Isground", Isground);
         Myanimator.SetFloat("Yvelocity", Myrb.velocity.y);
         Myanimator.SetBool("Iswallsliding", Iswallsliding);
-
+        Myanimator.SetBool("Canledgeclimb", Canledgeclimb);
     }
     private void Checkifjump()
     {
@@ -227,6 +238,11 @@ public class Movement : MonoBehaviour
     {
         Isground = Physics2D.OverlapCircle(Checker.position,Checkerradius,Ground);
         Iswall = Physics2D.Raycast(Wallcheker.position,transform.right,Wallcheckerdistance,Ground);
+        Istouchingtheledge = Physics2D.Raycast(Ledgechecker.position, transform.right, Wallcheckerdistance, Ground);
+        if (Iswall && !Istouchingtheledge&&!Ledgedetected) 
+        {
+            Ledgedetected = true;
+        }
     }
     private void Checksliding() 
     {
@@ -347,5 +363,36 @@ public class Movement : MonoBehaviour
         }
         
        
+    }
+    private void Checkledgecilmb() 
+    {
+        if (!Canledgeclimb&&!Ledgedetected) 
+        {
+            Canledgeclimb = true;
+            if (Isfacingright)
+            {
+                Ledgepos1 = new Vector2(Mathf.Floor(Ledgeposbot.x + Wallcheckerdistance) - Ledgexoffset1, Mathf.Floor(Ledgeposbot.y ) + Ledgeyoffset1);
+                Ledgepos2 = new Vector2(Mathf.Floor(Ledgeposbot.x + Wallcheckerdistance) + Ledgexoffset2, Mathf.Floor(Ledgeposbot.y ) + Ledgeyoffset2);
+
+            }
+            else 
+            {
+                Ledgepos1 = new Vector2(Mathf.Ceil(Ledgeposbot.x -Wallcheckerdistance) + Ledgexoffset1, Mathf.Ceil(Ledgeposbot.y ) + Ledgeyoffset1);
+                Ledgepos2 = new Vector2(Mathf.Ceil(Ledgeposbot.x - Wallcheckerdistance) - Ledgexoffset2, Mathf.Ceil(Ledgeposbot.y ) + Ledgeyoffset2);
+            }
+            Iswalking = false;
+            
+        }
+      
+    
+    }
+    private void Finishledgeclimb() 
+    {
+        Canledgeclimb = false;
+        transform.position = Ledgepos2;
+        //canmove=true
+        //canflip=true
+        Ledgedetected = false;
+    
     }
 }
