@@ -243,10 +243,10 @@ public class Movement : MonoBehaviour
     {
         if (Cannormaljump)
         {
-            if (Myrb.velocity.y < 0)
-            {
-                Myrb.velocity += new Vector2(0, Physics2D.gravity.y * (FallMultiplier - 1) * Time.deltaTime);
-            }
+            //if (Myrb.velocity.y < 0)
+            //{
+            //    Myrb.velocity += new Vector2(0, Physics2D.gravity.y * (FallMultiplier - 1) * Time.deltaTime);
+            //}
             
             //else if (Myrb.velocity.y >0)
             //{
@@ -346,6 +346,6 @@ public class Movement : MonoBehaviour
             Haswalljumped = false;
         }
         
-        //only for test!hahhaha
+       
     }
 }
