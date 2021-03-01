@@ -14,15 +14,14 @@ public class Movement : MonoBehaviour
     private Animator Myanimator;
     private bool Iswalking;
     private bool Isground;
-    private bool Iswall;//检测是否油枪
-    private bool Iswallsliding;//由于还要考虑velocity.y所以再加一个bool作为是否触发动画的判断
+    private bool Iswall;//chec the wall;
+    private bool Iswallsliding;//wallsliding animation bool
     public Transform Checker;//跳跃检测
     public Transform Wallcheker;
     public float Checkerradius;
     public LayerMask Ground;
     public int Amountofjump;
     private int Amountofjumpleft;
-    private bool Canjump;
     public float Wallcheckerdistance;
     public float Wallslidingspeed;
     public float Moveinairforce;//与AddForce有关
@@ -31,10 +30,23 @@ public class Movement : MonoBehaviour
 
     public float Walljumpforce;
     public Vector2 Walljumpdirection;
+    public float Jumptimerset;
+    private float Jumptimer;
+    private bool Isattemptingtojump=false;
+    private float Facingright=1;
+    private bool Cannormaljump;
+    private bool Canwalljump;
+    private bool Checkjumpmultiplier;
+    private bool Canmove;
+    private bool Canflip;
+    public float Turntimerset;
+    private float Turntimer;
     void Start()
     {
         Myrb = this.GetComponent<Rigidbody2D>();
         Myanimator = this.GetComponent<Animator>();
+        Walljumpdirection.Normalize();
+        Amountofjumpleft = Amountofjump;
     }
 
     // Update is called once per frame
@@ -47,6 +59,7 @@ public class Movement : MonoBehaviour
         Checkwalking();
         Checksliding();
         Animationset();
+        Jumptimersystem();
 
 
     }
@@ -75,14 +88,22 @@ public class Movement : MonoBehaviour
     }
     private void Checkifjump()
     {
-        if ((Isground && Myrb.velocity.y <= 0.01f) || Iswallsliding)
-        {
-            Canjump = true;
+        if (Isground && Myrb.velocity.y <= 0.01f)
+        { 
             Amountofjumpleft = Amountofjump;
         }
-        else if (Amountofjumpleft <= 0)
+        if (Iswall) 
         {
-            Canjump = false;
+            Canwalljump = true;
+            Checkjumpmultiplier = false;
+        }
+        if (Amountofjumpleft <= 0)
+        {
+            Cannormaljump = false;
+        }
+        else 
+        {
+            Cannormaljump = true;
         }
     }
     private void Checkwalking()
@@ -94,7 +115,6 @@ public class Movement : MonoBehaviour
         else
         {
             Iswalking = false;
-
         }
 
 
@@ -108,29 +128,77 @@ public class Movement : MonoBehaviour
     {
         if (Input.GetButtonDown("Jump"))
         {
-            Jump();
-        }
-        if (Input.GetButtonUp("Jump"))
+            if (Isground ||( Amountofjumpleft > 0&&Iswall))
+            { 
+                Normaljump();
+            }
+            else
+            {
+                Jumptimer = Jumptimerset;
+                Isattemptingtojump = true;
+            }
+        } 
+
+        if (Checkjumpmultiplier&&!Input.GetButton("Jump"))
         {
+            Checkjumpmultiplier = false;
             Myrb.velocity = new Vector2(Myrb.velocity.x, Myrb.velocity.y * Jumpkeeping);
+        }
+        if (Input.GetButtonDown("Horizontal") && Iswall)          
+        {
+            if (!Isground&&Myinput!=Facingright) 
+            {
+                Canmove = false;
+                Canflip = false;
+                Turntimer = Turntimerset;
+            }
+        }
+        if (!Canmove) 
+        {
+            Turntimer = Turntimer - Time.deltaTime;
+            if (Turntimer<=0) 
+            {
+                Canmove = true;
+                Canflip = true;
+            }
+        }
+    }
+    private void Jumptimersystem() //checjump function in the tutorial
+    {
+        if (Jumptimer > 0)
+        {
+            if (!Isground && Iswall && Myinput != Facingright&&Myinput!=0)
+            {
+                Walljump();
+
+            }
+            else if (Isground)
+            {
+                Normaljump();
+            }
+
+        }
+        if(Isattemptingtojump)
+        {
+            Jumptimer = Jumptimer - Time.deltaTime;
         }
     }
     private void Move()
     {
-        if (Isground)
+        if (Canmove)
         {
             Myrb.velocity = new Vector2(Speed * Myinput, Myrb.velocity.y);
 
         }
-        else if (!Isground && !Iswallsliding && Myinput != 0)
-        {
-            Vector2 Forcetoadd = new Vector2(Moveinairforce * Myinput, 0);
-            Myrb.AddForce(Forcetoadd);
-            if (Mathf.Abs(Myrb.velocity.x) > Speed)
-            {
-                Myrb.velocity = new Vector2(Speed * Myinput, Myrb.velocity.y);
-            }
-        }
+        //else if (!isground && !iswallsliding && myinput != 0)//control the movement in the air
+        //{
+        //    vector2 forcetoadd = new vector2(moveinairforce * myinput, 0);
+        //    myrb.addforce(forcetoadd);
+        //    if (mathf.abs(myrb.velocity.x) > speed)
+        //    {
+        //        myrb.velocity = new vector2(speed * myinput, myrb.velocity.y);
+        //    }
+        //}
         else if (!Isground && !Iswallsliding && Myinput == 0)
 
         {
@@ -155,34 +223,53 @@ public class Movement : MonoBehaviour
         if (Isfacingright && Myinput < 0)
         {
             Flip();
+           
         }
         else if (!Isfacingright && Myinput > 0)
         {
             Flip();
+            
         }
     }
     private void Flip()
     {
-        Isfacingright = !Isfacingright;
-
-        this.transform.Rotate(0.0f, 180.0f, 0.0f);
-
+        if (Canflip&&!Iswallsliding)
+        {
+            Isfacingright = !Isfacingright;
+            Facingright = Facingright * -1;
+            this.transform.Rotate(0.0f, 180.0f, 0.0f);
+        }
     }
-    private void Jump()
+    private void Normaljump()
     {
-        if (Canjump && !Iswallsliding)
+        if (Cannormaljump)
         {
             Myrb.velocity = new Vector2(Myrb.velocity.x, Jumpforce);
             Amountofjumpleft--;
+            Isattemptingtojump = false;
+            Jumptimer = 0;
+            Checkjumpmultiplier=true;
         }
 
-        else if (Canjump && Iswallsliding)
+    }
+    private void Walljump() 
+    {
+        if (Canwalljump)
         {
+            Myrb.velocity = new Vector2(Myrb.velocity.x,0);
             Iswallsliding = false;
+            Amountofjumpleft = Amountofjump;
             Amountofjumpleft--;
             Vector2 Walljump = new Vector2(Walljumpforce * Walljumpdirection.x * Myinput, Walljumpforce * Walljumpdirection.y);
-            Myrb.AddForce(Walljump);
+            Myrb.AddForce(Walljump,ForceMode2D.Impulse);
+            Isattemptingtojump = false;
+            Jumptimer = 0;
+            Checkjumpmultiplier = true;
+            Turntimer = 0;
+            Canflip = true;
+            Canmove = true;
         }
+
 
 
     }
@@ -193,7 +280,7 @@ public class Movement : MonoBehaviour
     }
     private void Checksliding()
     {
-        if (Iswall && Myrb.velocity.y < 0 && !Isground)
+        if (Iswall && Myrb.velocity.y < 0 && Myinput==Facingright)
         {
             Iswallsliding = true;
         }
