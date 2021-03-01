@@ -128,7 +128,7 @@ public class Movement : MonoBehaviour
     {
         if (Input.GetButtonDown("Jump"))
         {
-            if (Isground ||( Amountofjumpleft > 0&&Iswall))
+            if (Isground ||( Amountofjumpleft > 0&&!Iswall))
             { 
                 Normaljump();
             }

@@ -238,11 +238,9 @@ MonoBehaviour:
   Jumpkeeping: 0.5
   Airfriction: 0.3
   Walljumpforce: 20
-  Walljumpdirection: {x: 10, y: 10}
-  Jumptimerset: 0.15
-  Walljumptimerset: 0.3
-  Walljumptimer: 0
-  Walljumpleavetimerset: 0.5
+  Walljumpdirection: {x: 1, y: 2}
+  Jumptimerset: 0.1
+  Turntimerset: 0.1
 --- !u!50 &43878496
 Rigidbody2D:
   serializedVersion: 4
