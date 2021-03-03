@@ -96,6 +96,7 @@ public class Movement : MonoBehaviour
         {
             Canwalljump = true;
             Checkjumpmultiplier = false;
+            //贴着墙时不允许二连跳，防止跳到墙上再直接跳时误算一次二连跳
         }
         if (Amountofjumpleft <= 0)
         {
@@ -128,7 +129,7 @@ public class Movement : MonoBehaviour
     {
         if (Input.GetButtonDown("Jump"))
         {
-            if (Isground ||( Amountofjumpleft > 0&&!Iswall))
+            if (Isground ||( Amountofjumpleft > 0&&!Iswall))//墙跳必进jumptimer
             { 
                 Normaljump();
             }
@@ -137,23 +138,27 @@ public class Movement : MonoBehaviour
                 Jumptimer = Jumptimerset;
                 Isattemptingtojump = true;
             }
-        } 
-
+        }
+        //控制长按长跳短按短跳，如果没有按住则乘一个分数减少速度，为什么要加checkmultiplier？
+        //checkmultiplier在normaljump或walljump触发的瞬间后会变为true；在iswall的情况下变成false
+        //有没有时候时按下空格后不触发checkjumpmultiplier为true的呢？因为按下空格
         if (Checkjumpmultiplier&&!Input.GetButton("Jump"))
         {
             Checkjumpmultiplier = false;
             Myrb.velocity = new Vector2(Myrb.velocity.x, Myrb.velocity.y * Jumpkeeping);
         }
-        if (Input.GetButtonDown("Horizontal") && Iswall)          
+        if (Input.GetButtonDown("Horizontal") && Iswall)   //如果在墙壁上按下方向键并且向墙的相反方向移动，禁止移动和人物的翻转       
         {
             if (!Isground&&Myinput!=Facingright) 
             {
                 Canmove = false;
                 Canflip = false;
                 Turntimer = Turntimerset;
+                //turntimer 的系统让角色在贴到墙上后想向相反方向脱离墙时有一个延迟，避免了先按下方向键
+                //再按下空格键导致脱离了墙壁而无法进行walljump
             }
         }
-        if (!Canmove) 
+        if (!Canmove) //只有在反向脱离墙壁时使canmove=false应该用另一个bool替换
         {
             Turntimer = Turntimer - Time.deltaTime;
             if (Turntimer<=0) 
@@ -167,7 +172,9 @@ public class Movement : MonoBehaviour
     {
         if (Jumptimer > 0)
         {
-            if (!Isground && Iswall && Myinput != Facingright&&Myinput!=0)
+            if (!Isground && Iswall && Myinput != Facingright)
+                //先按了空格再按了方向键，所以配合了turntimer，解决了先按方向键再按空格和先按空格再按方向键的两种
+                //误触
             {
                 Walljump();
 
@@ -178,7 +185,7 @@ public class Movement : MonoBehaviour
             }
 
         }
-        if(Isattemptingtojump)
+        if(Isattemptingtojump)//换一个bool
         {
             Jumptimer = Jumptimer - Time.deltaTime;
         }
@@ -261,8 +268,8 @@ public class Movement : MonoBehaviour
             Amountofjumpleft = Amountofjump;
             Amountofjumpleft--;
             Vector2 Walljump = new Vector2(Walljumpforce * Walljumpdirection.x * Myinput, Walljumpforce * Walljumpdirection.y);
-            Myrb.AddForce(Walljump,ForceMode2D.Impulse);
-            Isattemptingtojump = false;
+            Myrb.AddForce(Walljump,ForceMode2D.Impulse);//forcemode?
+            Isattemptingtojump = false;//关闭jumptimer
             Jumptimer = 0;
             Checkjumpmultiplier = true;
             Turntimer = 0;
