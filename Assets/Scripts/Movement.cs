@@ -34,13 +34,25 @@ public class Movement : MonoBehaviour
     private float Jumptimer;
     private bool Isattemptingtojump=false;
     private float Facingright=1;
-    private bool Cannormaljump;
-    private bool Canwalljump;
-    private bool Checkjumpmultiplier;
-    private bool Canmove;
-    private bool Canflip;
+    private bool Cannormaljump=false;
+    private bool Canwalljump=false;
+    private bool Checkjumpmultiplier=false;
+    private bool Canmove=true;
+    private bool Canflip=true;
     public float Turntimerset;
     private float Turntimer;
+    private bool Istouchingtheledge=false;
+    public Transform Ledgechecker;
+    private bool Canledgeclimb=false;
+    private bool Ledgedetected=false;
+    private Vector2 Ledgeposbot;
+    private Vector2 Ledgepos1;
+    private Vector2 Ledgepos2;
+    public float Ledgexoffset1;
+    public float Ledgexoffset2;
+    public float Ledgeyoffset1;
+    public float Ledgeyoffset2;
+
     void Start()
     {
         Myrb = this.GetComponent<Rigidbody2D>();
@@ -60,6 +72,7 @@ public class Movement : MonoBehaviour
         Checksliding();
         Animationset();
         Jumptimersystem();
+        Checkledgecilmb();
 
 
     }
@@ -84,7 +97,7 @@ public class Movement : MonoBehaviour
         Myanimator.SetBool("Isground", Isground);
         Myanimator.SetFloat("Yvelocity", Myrb.velocity.y);
         Myanimator.SetBool("Iswallsliding", Iswallsliding);
-
+        Myanimator.SetBool("Canledgeclimb", Canledgeclimb);
     }
     private void Checkifjump()
     {
@@ -158,7 +171,7 @@ public class Movement : MonoBehaviour
                 //再按下空格键导致脱离了墙壁而无法进行walljump
             }
         }
-        if (!Canmove) //只有在反向脱离墙壁时使canmove=false应该用另一个bool替换
+        if (Turntimer>0) //只有在反向脱离墙壁时使canmove=false应该用另一个bool替换
         {
             Turntimer = Turntimer - Time.deltaTime;
             if (Turntimer<=0) 
@@ -284,10 +297,16 @@ public class Movement : MonoBehaviour
     {
         Isground = Physics2D.OverlapCircle(Checker.position, Checkerradius, Ground);
         Iswall = Physics2D.Raycast(Wallcheker.position, transform.right, Wallcheckerdistance, Ground);
+        Istouchingtheledge = Physics2D.Raycast(Ledgechecker.position, transform.right, Wallcheckerdistance, Ground);
+        if (Iswall && !Istouchingtheledge && !Ledgedetected)
+        {
+            Ledgedetected = true;
+            Ledgeposbot = Wallcheker.position;
+        }
     }
     private void Checksliding()
     {
-        if (Iswall && Myrb.velocity.y < 0 && Myinput==Facingright)
+        if (Iswall && Myrb.velocity.y < 0 && Myinput==Facingright&&!Canledgeclimb)
         {
             Iswallsliding = true;
         }
@@ -297,5 +316,41 @@ public class Movement : MonoBehaviour
         }
     }
 
+    private void Checkledgecilmb()
+    {
+        if (!Canledgeclimb && Ledgedetected)
+        {
+            Canledgeclimb = true;
+            if (Isfacingright)
+            {
+                Ledgepos1 = new Vector2(Mathf.Floor(Ledgeposbot.x + Wallcheckerdistance) - Ledgexoffset1, Mathf.Floor(Ledgeposbot.y) + Ledgeyoffset1);
+                Ledgepos2 = new Vector2(Mathf.Floor(Ledgeposbot.x + Wallcheckerdistance) + Ledgexoffset2, Mathf.Floor(Ledgeposbot.y) + Ledgeyoffset2);
 
+            }
+            else
+            {
+                Ledgepos1 = new Vector2(Mathf.Ceil(Ledgeposbot.x - Wallcheckerdistance) + Ledgexoffset1, Mathf.Floor(Ledgeposbot.y) + Ledgeyoffset1);
+                Ledgepos2 = new Vector2(Mathf.Ceil(Ledgeposbot.x - Wallcheckerdistance) - Ledgexoffset2, Mathf.Floor(Ledgeposbot.y) + Ledgeyoffset2);
+            }
+            Canmove = false;
+            Canflip = false;
+            Myanimator.SetBool("Canledgeclimb", Canledgeclimb);
+        }
+        if (Canledgeclimb) 
+        {
+            this.transform.position = Ledgepos1;
+        }
+
+
+    }
+    private void Finishledgeclimb()
+    {
+        Canledgeclimb = false;
+        transform.position = Ledgepos2;
+        Canmove = true;
+        Canflip = true;
+        Ledgedetected = false;
+        Myanimator.SetBool("Canledgeclimb", Canledgeclimb);
+
+    }
 }
