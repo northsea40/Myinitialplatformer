@@ -122,7 +122,7 @@ public class Movement : MonoBehaviour
     }
     private void Checkwalking()
     {
-        if (Myrb.velocity.x != 0)
+        if (Myrb.velocity.x != 0&&Myinput !=0)
         {
             Iswalking = true;
         }
@@ -278,7 +278,7 @@ public class Movement : MonoBehaviour
         {
             Myrb.velocity = new Vector2(Myrb.velocity.x,0);
             Iswallsliding = false;
-            Amountofjumpleft = Amountofjump;
+          //  Amountofjumpleft = Amountofjump;
             Amountofjumpleft--;
             Vector2 Walljump = new Vector2(Walljumpforce * Walljumpdirection.x * Myinput, Walljumpforce * Walljumpdirection.y);
             Myrb.AddForce(Walljump,ForceMode2D.Impulse);//forcemode?
@@ -329,8 +329,8 @@ public class Movement : MonoBehaviour
             }
             else
             {
-                Ledgepos1 = new Vector2(Mathf.Ceil(Ledgeposbot.x - Wallcheckerdistance) + Ledgexoffset1, Mathf.Floor(Ledgeposbot.y) + Ledgeyoffset1);
-                Ledgepos2 = new Vector2(Mathf.Ceil(Ledgeposbot.x - Wallcheckerdistance) - Ledgexoffset2, Mathf.Floor(Ledgeposbot.y) + Ledgeyoffset2);
+                Ledgepos1 = new Vector2(Mathf.Ceil(Ledgeposbot.x - Wallcheckerdistance) + Ledgexoffset1, Mathf.Floor(Ledgeposbot.y )+ Ledgeyoffset1);
+                Ledgepos2 = new Vector2(Mathf.Ceil(Ledgeposbot.x - Wallcheckerdistance) - Ledgexoffset2, Mathf.Floor(Ledgeposbot.y )+ Ledgeyoffset2);
             }
             Canmove = false;
             Canflip = false;
